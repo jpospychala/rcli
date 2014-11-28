@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+import sys
+import json
+
+def path(doc, path_str):
+    '''extracts json at given path'''
+    for seg in path_str.pop(0).split('.'):
+        doc = doc.get(seg) or None
+    return doc
+
+
+def pick(doc, items):
+    '''extracts selected properties of json document'''
+    result = {}
+    for item in items:
+        if item in doc:
+            result[item] = doc[item]
+    return result
+
+
+def head(doc, _):
+    '''head of list'''
+    return doc[0] or None
+
+
+def tail(doc, _):
+    '''tail of list'''
+    return doc[1:] or None
+
+
+def eq(doc, args):
+    '''true if equals'''
+    return json.dumps(doc) == json.dumps(json.loads(args.pop(0)))
+
+def help(argv):
+    '''help instructions'''
+    print "R <command>"
+    print ""
+    print "Commands:"
+    for cmd_name, (_, cmd) in cmds.items():
+        print cmd_name, "   ", cmd.__doc__
+
+
+cmds = {
+    "help": (False, help),
+    "path": (True, path),
+    "pick": (True, pick),
+    "head": (True, head),
+    "tail": (True, tail),
+    "eq": (True, eq)
+}
+
+
+def main(argv):
+    cmd_name = argv.pop(0)
+    stdin, cmd = cmds.get(cmd_name, cmds["help"])
+    if stdin:
+        doc = json.load(sys.stdin)
+        result = cmd(doc, argv)
+    else:
+        result = cmd(argv)
+    if result is not None:
+        print json.dumps(result)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
