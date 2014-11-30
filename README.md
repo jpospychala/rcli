@@ -12,4 +12,10 @@ $ echo '[1, 2, 3, 4]' | R head
 
 $ echo '[1, 2, 3, 4]' | R tail
 [2, 3, 4]
+
+$ echo '{"age":60}' | R eq '{"age":60}'
+true
+
+$ echo '{"age":60}' | R not eq '{"name":"joe"}'
+true
 ```
