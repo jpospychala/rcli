@@ -27,7 +27,7 @@ Usage
 
 path
 ----
-Outputs JSON document node specified by path. Path is built of dot-separated segments.
+Outputs JSON document node specified by path. Path is built of period-separated segments.
 
 ```bash
 $ echo '{"servers": {"sunshine": {"ip": "127.0.0.1" }}}' | R path servers.sunshine.ip

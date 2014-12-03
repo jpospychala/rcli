@@ -20,6 +20,10 @@ echo '{"a":1}' | R not eq '{"b":1,"c":2,"a":1}'
 echo '{}' | R pick a | R eq '{}'
 echo '{"a":1,"b":2}' | R pick a | R eq '{"a":1}'
 
+# omit
+echo '{}' | R omit a | R eq '{}'
+echo '{"a":1,"b":2}' | R omit a | R eq '{"b":2}'
+
 # path
 echo '{"a":{"b":true}}' | R path a.b | R eq true
 echo '{"a":{"c":2}}' | R path a.c | R eq 2
@@ -47,4 +51,13 @@ echo '{"a":1,"b":2}' | R values | R eq '[1,2]'
 echo '[1,2,3]' | R values
 
 # keys
-echo '{"a":1,"b":2}' | R keys | R eq '["a", "b"]'
+echo '{"a":1,"b":2}' | R keys | R eq '["a","b"]'
+
+# where
+echo '{"a":1, "b":2}' | R where '{"a": 1}' | R eq '{"a":1, "b":2}'
+
+# filter
+echo '[{"a":1, "b":2}]' | R filter where '{"a":1}' | R eq '[{"a":1,"b":2}]'
+
+# mixin
+echo '{"a":1, "b":2}' | R mixin '{"b": 5,"c":3}' | R eq '{"a":1,"b":5,"c":3}'

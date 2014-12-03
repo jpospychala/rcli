@@ -72,6 +72,53 @@ func pick(v interface{}, params []string) interface{} {
 	return out
 }
 
+func omit(v interface{}, params []string) interface{} {
+	doc, ok := v.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	for k, _ := range doc {
+		omit := false
+		for _, p := range params {
+			if k == p {
+				omit = true
+			}
+		}
+		if omit {
+			delete(doc, k)
+		}
+	}
+	return doc
+}
+
+func where(v interface{}, params []string) interface{} {
+	v2 := unmarshal(params[0])
+	keys := keys(v2, nil).([]string)
+	vpicked := pick(v, keys)
+	if deepequal(vpicked, v2) {
+		return v
+	} else {
+		return nil
+	}
+}
+
+func mixin(v interface{}, params []string) interface{} {
+	doc, ok := v.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	v2 := unmarshal(params[0])
+	v2map, ok := v2.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	for k, v := range v2map {
+		doc[k] = v
+	}
+	return doc
+
+}
+
 func deepequal(v interface{}, v2 interface{}) bool {
 	switch v1 := v.(type) {
 	case int:
@@ -157,19 +204,36 @@ func append_to_list(v interface{}, params []string) interface{} {
 
 func each(v interface{}, params []string) interface{} {
 	list, ok := v.([]interface{})
-	if ok {
-		for _, item := range list {
-			marshal(item, false)
-		}
+	if !ok {
+		return nil
+	}
+	for _, item := range list {
+		marshal(item, false)
 	}
 	return nil
+}
+
+func filter(v interface{}, params []string) interface{} {
+	list, ok := v.([]interface{})
+	if !ok {
+		return nil
+	}
+	matches := []interface{}{}
+	for _, item := range list {
+		match := dispatch(item, params)
+		if match != nil {
+			matches = append(matches, match)
+		}
+	}
+	return matches
 }
 
 func help(doc interface{}, params []string) interface{} {
 	fmt.Println("Usage: R <command> [arguments...]")
 	fmt.Println("path    returns document from specific path")
 	fmt.Println("keys    returns keys of JSON document")
-	fmt.Println("pick    picks element from JSON")
+	fmt.Println("pick    picks specified keys from JSON object")
+	fmt.Println("omit    omits specified keys from JSON object")
 	fmt.Println("eq      compares stdin with first argument for equality")
 	fmt.Println("not     negation")
 	fmt.Println("head    head of a list")
@@ -178,6 +242,8 @@ func help(doc interface{}, params []string) interface{} {
 	fmt.Println("values  list of JSON object values")
 	fmt.Println("append  appends to list")
 	fmt.Println("help    prints usage details")
+	fmt.Println("where   returns doc if it matches spec doc")
+	fmt.Println("filter  returns list elements matching predicate")
 	return nil
 }
 
@@ -194,7 +260,10 @@ func dispatch(v interface{}, params []string) interface{} {
 		"path":   {path, true},
 		"keys":   {keys, true},
 		"pick":   {pick, true},
+		"omit":   {omit, true},
 		"values": {values, true},
+		"where":  {where, true},
+		"mixin":  {mixin, true},
 		// logic
 		"eq":  {eq, true},
 		"not": {not, false},
@@ -203,6 +272,7 @@ func dispatch(v interface{}, params []string) interface{} {
 		"tail":   {tail, true},
 		"each":   {each, true},
 		"append": {append_to_list, true},
+		"filter": {filter, true},
 		// misc
 		"help": {help, false},
 	}
