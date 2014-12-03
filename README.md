@@ -1,5 +1,7 @@
 RCLI: Ramda for Command Line
-======================
+============================
+JSON manipulation tools for command line, inspired by Ramda.js, a practical functional library inspired by Clojure.
+
 ```bash
 $ echo '{"status":"RUNNING"}' | R path status
 RUNNING
@@ -18,4 +20,18 @@ true
 
 $ echo '{"age":60}' | R not eq '{"name":"joe"}'
 true
+```
+
+Usage
+=====
+
+path
+----
+
+```bash
+$ echo '{"servers": {"sunshine": {"ip": "127.0.0.1" }}}' | R path servers.sunshine.ip
+127.0.0.1
+
+$ echo '[{"ip": "8.8.8.8"}]' | R path 0.ip
+8.8.8.8
 ```
