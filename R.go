@@ -4,14 +4,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
 func path(v interface{}, params []string) interface{} {
 	path := strings.Split(params[0], ".")
 	for _, seg := range path {
-		doc := v.(map[string]interface{})
-		v = doc[seg]
+		doc, ok := v.(map[string]interface{})
+		if ok {
+			v = doc[seg]
+		} else {
+			doc, ok := v.([]interface{})
+			if !ok {
+				return nil
+			}
+			segInt, err := strconv.Atoi(seg)
+			if err != nil {
+				return nil
+			}
+			if (segInt < 0) || (segInt >= len(doc)) {
+				return nil
+			}
+			v = doc[segInt]
+		}
 	}
 	return v
 }
@@ -83,11 +99,7 @@ func deepequal(v interface{}, v2 interface{}) bool {
 }
 
 func eq(v interface{}, params []string) interface{} {
-	var v2 interface{}
-	if err := json.Unmarshal([]byte(params[0]), &v2); err != nil {
-		fmt.Println(err)
-		return nil
-	}
+	v2 := unmarshal(params[0])
 	return deepequal(v, v2)
 }
 
@@ -105,6 +117,9 @@ func head(v interface{}, params []string) interface{} {
 	if !ok {
 		return nil
 	}
+	if len(list) == 0 {
+		return nil
+	}
 	return list[0]
 }
 
@@ -113,7 +128,20 @@ func tail(v interface{}, params []string) interface{} {
 	if !ok {
 		return nil
 	}
+	if len(list) <= 1 {
+		return nil
+	}
 	return list[1:]
+}
+
+func each(v interface{}, params []string) interface{} {
+	list, ok := v.([]interface{})
+	if ok {
+		for _, item := range list {
+			marshal(item, false)
+		}
+	}
+	return nil
 }
 
 func help(doc interface{}, params []string) interface{} {
@@ -125,49 +153,68 @@ func help(doc interface{}, params []string) interface{} {
 	fmt.Println("not   negation")
 	fmt.Println("head  head of a list")
 	fmt.Println("path  tail of a list")
+	fmt.Println("each  prints each list element in new line")
 	fmt.Println("help  prints usage details")
 	return nil
+}
+
+type cmd struct {
+	run   func(interface{}, []string) interface{}
+	stdin bool
 }
 
 func dispatch(v interface{}, params []string) interface{} {
 	cmdName := params[0]
 	args := params[1:]
-	cmds := map[string]func(interface{}, []string) interface{}{
+	cmds := map[string]cmd{
 		// object
-		"path": path,
-		"keys": keys,
-		"pick": pick,
+		"path": {path, true},
+		"keys": {keys, true},
+		"pick": {pick, true},
 		// logic
-		"eq":  eq,
-		"not": not,
+		"eq":  {eq, true},
+		"not": {not, false},
 		// array
-		"head": head,
-		"tail": tail,
+		"head": {head, true},
+		"tail": {tail, true},
+		"each": {each, true},
 		// misc
-		"help": help,
+		"help": {help, false},
 	}
-	if c, ok := cmds[cmdName]; ok {
-		return c(v, args)
+	if cmd, ok := cmds[cmdName]; ok {
+		if cmd.stdin == true {
+			dec := json.NewDecoder(os.Stdin)
+			dec.Decode(&v)
+		}
+		return cmd.run(v, args)
 	}
 	return nil
 }
 
-func main() {
-	dec := json.NewDecoder(os.Stdin)
-
-	var v interface{}
-	if err := dec.Decode(&v); err != nil {
-		fmt.Println(err)
-		return
+func unmarshal(param string) interface{} {
+	var v2 interface{}
+	if err := json.Unmarshal([]byte(param), &v2); err != nil {
+		return param
 	}
-	if ret := dispatch(v, os.Args[1:]); ret != nil {
+	return v2
+}
+
+func marshal(v interface{}, canExit bool) {
+	_, isString := v.(string)
+	if isString {
+		fmt.Println(v)
+	} else {
 		enc := json.NewEncoder(os.Stdout)
-		if err := enc.Encode(&ret); err != nil {
-			fmt.Println(err)
-		}
-		retBool, ok := ret.(bool)
-		if ok && !retBool {
+		enc.Encode(&v)
+		vBool, ok := v.(bool)
+		if canExit && ok && !vBool {
 			os.Exit(1)
 		}
+	}
+}
+
+func main() {
+	if ret := dispatch(nil, os.Args[1:]); ret != nil {
+		marshal(ret, true)
 	}
 }
