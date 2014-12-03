@@ -146,6 +146,15 @@ func tail(v interface{}, params []string) interface{} {
 	return list[1:]
 }
 
+func append_to_list(v interface{}, params []string) interface{} {
+	list, ok := v.([]interface{})
+	if !ok {
+		return nil
+	}
+	v2 := unmarshal(params[0])
+	return append(list, v2)
+}
+
 func each(v interface{}, params []string) interface{} {
 	list, ok := v.([]interface{})
 	if ok {
@@ -167,6 +176,7 @@ func help(doc interface{}, params []string) interface{} {
 	fmt.Println("path    tail of a list")
 	fmt.Println("each    prints each list element in new line")
 	fmt.Println("values  list of JSON object values")
+	fmt.Println("append  appends to list")
 	fmt.Println("help    prints usage details")
 	return nil
 }
@@ -189,9 +199,10 @@ func dispatch(v interface{}, params []string) interface{} {
 		"eq":  {eq, true},
 		"not": {not, false},
 		// array
-		"head": {head, true},
-		"tail": {tail, true},
-		"each": {each, true},
+		"head":   {head, true},
+		"tail":   {tail, true},
+		"each":   {each, true},
+		"append": {append_to_list, true},
 		// misc
 		"help": {help, false},
 	}

@@ -27,6 +27,7 @@ Usage
 
 path
 ----
+Outputs JSON document node specified by path. Path is built of dot-separated segments.
 
 ```bash
 $ echo '{"servers": {"sunshine": {"ip": "127.0.0.1" }}}' | R path servers.sunshine.ip
@@ -34,4 +35,14 @@ $ echo '{"servers": {"sunshine": {"ip": "127.0.0.1" }}}' | R path servers.sunshi
 
 $ echo '[{"ip": "8.8.8.8"}]' | R path 0.ip
 8.8.8.8
+```
+
+append
+------
+Outputs an array piped to stdin and adds new element to it. New array element should be
+passed as an argument.
+
+```bash
+$ echo '[1, 2, 3]' | R append 4
+[1,2,3,4]
 ```
