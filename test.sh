@@ -42,5 +42,9 @@ echo '[]' | R tail
 echo '[1,2,3]' | R each | head -1 | R eq 1
 echo '[1,2,3]' | R each | tail -1 | R eq 3
 
+# values
+echo '{"a":1,"b":2}' | R values | R eq '[1,2]'
+echo '[1,2,3]' | R values
+
 # keys
 echo '{"a":1,"b":2}' | R keys | R eq '["a", "b"]'

@@ -44,6 +44,18 @@ func keys(v interface{}, params []string) interface{} {
 	return keys
 }
 
+func values(v interface{}, params []string) interface{} {
+	doc, ok := v.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	vals := []interface{}{}
+	for _, v := range doc {
+		vals = append(vals, v)
+	}
+	return vals
+}
+
 func pick(v interface{}, params []string) interface{} {
 	doc, ok := v.(map[string]interface{})
 	if !ok {
@@ -146,15 +158,16 @@ func each(v interface{}, params []string) interface{} {
 
 func help(doc interface{}, params []string) interface{} {
 	fmt.Println("Usage: R <command> [arguments...]")
-	fmt.Println("path  returns document from specific path")
-	fmt.Println("keys  returns keys of JSON document")
-	fmt.Println("pick  picks element from JSON")
-	fmt.Println("eq    compares stdin with first argument for equality")
-	fmt.Println("not   negation")
-	fmt.Println("head  head of a list")
-	fmt.Println("path  tail of a list")
-	fmt.Println("each  prints each list element in new line")
-	fmt.Println("help  prints usage details")
+	fmt.Println("path    returns document from specific path")
+	fmt.Println("keys    returns keys of JSON document")
+	fmt.Println("pick    picks element from JSON")
+	fmt.Println("eq      compares stdin with first argument for equality")
+	fmt.Println("not     negation")
+	fmt.Println("head    head of a list")
+	fmt.Println("path    tail of a list")
+	fmt.Println("each    prints each list element in new line")
+	fmt.Println("values  list of JSON object values")
+	fmt.Println("help    prints usage details")
 	return nil
 }
 
@@ -168,9 +181,10 @@ func dispatch(v interface{}, params []string) interface{} {
 	args := params[1:]
 	cmds := map[string]cmd{
 		// object
-		"path": {path, true},
-		"keys": {keys, true},
-		"pick": {pick, true},
+		"path":   {path, true},
+		"keys":   {keys, true},
+		"pick":   {pick, true},
+		"values": {values, true},
 		// logic
 		"eq":  {eq, true},
 		"not": {not, false},
