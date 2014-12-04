@@ -130,6 +130,12 @@ func deepequal(v interface{}, v2 interface{}) bool {
 	case float64:
 		v2float, ok := v2.(float64)
 		return ok && v1 == v2float
+	case json.Number:
+		v2num, ok := v2.(json.Number)
+		if !ok {
+			return false
+		}
+		return v1.String() == v2num.String()
 	case string:
 		v2float, ok := v2.(string)
 		return ok && v1 == v2float
@@ -295,6 +301,7 @@ func dispatch(v interface{}, params []string) interface{} {
 	if cmd, ok := cmds[cmdName]; ok {
 		if cmd.stdin == true {
 			dec := json.NewDecoder(os.Stdin)
+			dec.UseNumber()
 			dec.Decode(&v)
 		}
 		return cmd.run(v, args)
@@ -304,7 +311,11 @@ func dispatch(v interface{}, params []string) interface{} {
 
 func unmarshal(param string) interface{} {
 	var v2 interface{}
-	if err := json.Unmarshal([]byte(param), &v2); err != nil {
+	r := strings.NewReader(param)
+	dec := json.NewDecoder(r)
+	dec.UseNumber()
+	err := dec.Decode(&v2)
+	if err != nil {
 		return param
 	}
 	return v2
