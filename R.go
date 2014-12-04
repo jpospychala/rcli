@@ -228,6 +228,20 @@ func filter(v interface{}, params []string) interface{} {
 	return matches
 }
 
+func find(v interface{}, params []string) interface{} {
+	list, ok := v.([]interface{})
+	if !ok {
+		return nil
+	}
+	for _, item := range list {
+		match := dispatch(item, params)
+		if match != nil {
+			return match
+		}
+	}
+	return nil
+}
+
 func help(doc interface{}, params []string) interface{} {
 	fmt.Println("Usage: R <command> [arguments...]")
 	fmt.Println("path    returns document from specific path")
@@ -244,6 +258,7 @@ func help(doc interface{}, params []string) interface{} {
 	fmt.Println("help    prints usage details")
 	fmt.Println("where   returns doc if it matches spec doc")
 	fmt.Println("filter  returns list elements matching predicate")
+	fmt.Println("find    returns first element from list that matches predicate")
 	return nil
 }
 
@@ -273,6 +288,7 @@ func dispatch(v interface{}, params []string) interface{} {
 		"each":   {each, true},
 		"append": {append_to_list, true},
 		"filter": {filter, true},
+		"find":   {find, true},
 		// misc
 		"help": {help, false},
 	}

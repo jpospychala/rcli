@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PATH=$PATH:./
+export PATH=./:$PATH
 
 # eq
 echo '"abc"' | R eq '"abc"'
@@ -58,6 +58,10 @@ echo '{"a":1, "b":2}' | R where '{"a": 1}' | R eq '{"a":1, "b":2}'
 
 # filter
 echo '[{"a":1, "b":2}]' | R filter where '{"a":1}' | R eq '[{"a":1,"b":2}]'
+
+# find
+echo '[{"a":1, "b":2}]' | R find where '{"a":1}' | R eq '{"a":1,"b":2}'
+echo '[{"a":1, "b":2}]' | R find where '{"a":2}'
 
 # mixin
 echo '{"a":1, "b":2}' | R mixin '{"b": 5,"c":3}' | R eq '{"a":1,"b":5,"c":3}'
