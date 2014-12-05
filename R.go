@@ -219,6 +219,19 @@ func each(v interface{}, params []string) interface{} {
 	return nil
 }
 
+func obj_map(v interface{}, params []string) interface{} {
+	list, ok := v.([]interface{})
+	if !ok {
+		return nil
+	}
+	ret := []interface{}{}
+	for _, item := range list {
+		out := dispatch(item, params)
+		ret = append(ret, out)
+	}
+	return ret
+}
+
 func filter(v interface{}, params []string) interface{} {
 	list, ok := v.([]interface{})
 	if !ok {
@@ -259,6 +272,7 @@ func help(doc interface{}, params []string) interface{} {
 	fmt.Println("head    head of a list")
 	fmt.Println("path    tail of a list")
 	fmt.Println("each    prints each list element in new line")
+	fmt.Println("map     maps list elements using func")
 	fmt.Println("values  list of JSON object values")
 	fmt.Println("append  appends to list")
 	fmt.Println("help    prints usage details")
@@ -292,6 +306,7 @@ func dispatch(v interface{}, params []string) interface{} {
 		"head":   {head, true},
 		"tail":   {tail, true},
 		"each":   {each, true},
+		"map":    {obj_map, true},
 		"append": {append_to_list, true},
 		"filter": {filter, true},
 		"find":   {find, true},
