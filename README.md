@@ -1,6 +1,6 @@
 RCLI: Ramda for Command Line
 ============================
-JSON manipulation tools for command line, inspired by Ramda.js, a practical functional library inspired by Clojure.
+JSON manipulation tools for command line inspired by Ramda.js, a practical functional JavaScript library inspired by Clojure.
 
 ```bash
 $ echo '{"status":"RUNNING"}' | R path status
@@ -20,6 +20,16 @@ true
 
 $ echo '{"age":60}' | R not eq '{"name":"joe"}'
 true
+```
+
+Building
+========
+RCLI is written in Go and requires ```go``` command to build.
+```bash
+git clone https://github.com/jpospychala/rcli.git
+cd rcli
+make
+sudo make install
 ```
 
 Usage
