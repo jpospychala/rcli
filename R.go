@@ -269,7 +269,7 @@ func help(doc interface{}, params []string) interface{} {
 			if cmd.name == params[0] {
 				fmt.Println(cmd.descr)
 				if cmd.example != "" {
-					fmt.Println("\nExample:\n", cmd.example)
+					fmt.Printf("\nExample:\n%v\n", cmd.example)
 				}
 			}
 		}
