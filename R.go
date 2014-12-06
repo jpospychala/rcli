@@ -262,66 +262,63 @@ func find(v interface{}, params []string) interface{} {
 }
 
 func help(doc interface{}, params []string) interface{} {
+	cmds := allCmds()
 	fmt.Println("Usage: R <command> [arguments...]")
-	fmt.Println("path    returns document from specific path")
-	fmt.Println("keys    returns keys of JSON document")
-	fmt.Println("pick    picks specified keys from JSON object")
-	fmt.Println("omit    omits specified keys from JSON object")
-	fmt.Println("eq      compares stdin with first argument for equality")
-	fmt.Println("not     negation")
-	fmt.Println("head    head of a list")
-	fmt.Println("path    tail of a list")
-	fmt.Println("each    prints each list element in new line")
-	fmt.Println("map     maps list elements using func")
-	fmt.Println("values  list of JSON object values")
-	fmt.Println("append  appends to list")
-	fmt.Println("help    prints usage details")
-	fmt.Println("where   returns doc if it matches spec doc")
-	fmt.Println("filter  returns list elements matching predicate")
-	fmt.Println("find    returns first element from list that matches predicate")
+	for _, cmd := range cmds {
+		fmt.Println(cmd.descr)
+	}
 	return nil
 }
 
 type cmd struct {
+	name  string
 	run   func(interface{}, []string) interface{}
 	stdin bool
+	descr string
+}
+
+func allCmds() []cmd {
+	return []cmd{
+		// misc
+		{"help", help, false, "help          prints usage details"},
+		// object
+		{"path", path, true, "path <path>   returns object at period-delimited path"},
+		{"keys", keys, true, "keys          returns object property names"},
+		{"pick", pick, true, "pick [list]   returns object with only specified properties"},
+		{"omit", omit, true, "omit [list]   returns object without specified properties"},
+		{"values", values, true, "values        returns list of object values"},
+		{"where", where, true, "where <obj>   checks if object matches spec obj"},
+		{"mixin", mixin, true, "mixin <obj>   adds obj properties into input object"},
+		// logic
+		{"eq", eq, true, "eq  <obj>     compares stdin with first argument for equality"},
+		{"not", not, false, "not <func>    inverts boolean result of following function"},
+		// array
+		{"head", head, true, "head          first element of a list"},
+		{"tail", tail, true, "tail          all but first elements of a list"},
+		{"each", each, true, "each          prints each list element in new line"},
+		{"map", obj_map, true, "map <func>    maps list elements using func"},
+		{"append", append_to_list, true, "append <obj>  appends object to list"},
+		{"filter", filter, true, "filter <func> returns list of objects matching predicate"},
+		{"find", find, true, "find <func>   first object from list matching predicate"},
+	}
 }
 
 func dispatch(v interface{}, params []string) interface{} {
-	cmdName := params[0]
+	cmdName := params[0] // todo what if params is empty
 	args := params[1:]
-	cmds := map[string]cmd{
-		// object
-		"path":   {path, true},
-		"keys":   {keys, true},
-		"pick":   {pick, true},
-		"omit":   {omit, true},
-		"values": {values, true},
-		"where":  {where, true},
-		"mixin":  {mixin, true},
-		// logic
-		"eq":  {eq, true},
-		"not": {not, false},
-		// array
-		"head":   {head, true},
-		"tail":   {tail, true},
-		"each":   {each, true},
-		"map":    {obj_map, true},
-		"append": {append_to_list, true},
-		"filter": {filter, true},
-		"find":   {find, true},
-		// misc
-		"help": {help, false},
-	}
-	if cmd, ok := cmds[cmdName]; ok {
-		if cmd.stdin == true {
-			dec := json.NewDecoder(os.Stdin)
-			dec.UseNumber()
-			dec.Decode(&v)
+	cmds := allCmds()
+	cmd := cmds[0]
+	for _, i := range cmds {
+		if i.name == cmdName {
+			cmd = i
 		}
-		return cmd.run(v, args)
 	}
-	return nil
+	if cmd.stdin == true {
+		dec := json.NewDecoder(os.Stdin)
+		dec.UseNumber()
+		dec.Decode(&v)
+	}
+	return cmd.run(v, args)
 }
 
 func unmarshal(param string) interface{} {
