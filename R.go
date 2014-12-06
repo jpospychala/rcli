@@ -264,48 +264,120 @@ func find(v interface{}, params []string) interface{} {
 func help(doc interface{}, params []string) interface{} {
 	cmds := allCmds()
 	fmt.Println("Usage: R <command> [arguments...]")
-	for _, cmd := range cmds {
-		fmt.Println(cmd.descr)
+	if len(params) > 0 {
+		for _, cmd := range cmds {
+			if cmd.name == params[0] {
+				fmt.Println(cmd.descr)
+				if cmd.example != "" {
+					fmt.Println("\nExample:\n", cmd.example)
+				}
+			}
+		}
+	} else {
+		for _, cmd := range cmds {
+			fmt.Println(cmd.descr)
+		}
 	}
 	return nil
 }
 
 type cmd struct {
-	name  string
-	run   func(interface{}, []string) interface{}
-	stdin bool
-	descr string
+	name    string
+	run     func(interface{}, []string) interface{}
+	stdin   bool
+	descr   string
+	example string
 }
 
 func allCmds() []cmd {
 	return []cmd{
 		// misc
-		{"help", help, false, "help          prints usage details"},
+		{"help", help, false,
+			"help          prints usage details",
+			""},
 		// object
-		{"path", path, true, "path <path>   returns object at period-delimited path"},
-		{"keys", keys, true, "keys          returns object property names"},
-		{"pick", pick, true, "pick [list]   returns object with only specified properties"},
-		{"omit", omit, true, "omit [list]   returns object without specified properties"},
-		{"values", values, true, "values        returns list of object values"},
-		{"where", where, true, "where <obj>   checks if object matches spec obj"},
-		{"mixin", mixin, true, "mixin <obj>   adds obj properties into input object"},
+		{"path", path, true,
+			"path <path>   returns object at period-delimited path",
+			` $ echo '{"a":{"b":true}}' | R path a.b
+ true`},
+		{"keys", keys, true,
+			"keys          returns object property names",
+			` echo '{"a":1,"b":2}' | R keys
+ ["a","b"]`},
+		{"pick", pick, true,
+			"pick [list]   returns object with only specified properties",
+			` $ echo '{"a":1,"b":2}' | R pick a
+ {"a":1}`},
+		{"omit", omit, true,
+			"omit [list]   returns object without specified properties",
+			` $ echo '{"a":1,"b":2}' | R omit a
+ {"b":2}`},
+		{"values", values, true,
+			"values        returns list of object values",
+			` $ echo '{"a":1,"b":2}' | R values
+ [1,2]`},
+		{"where", where, true,
+			"where <obj>   checks if object matches spec obj",
+			` $ echo '{"a":1, "b":2}' | R where '{"a": 1}'
+ {"a":1, "b":2}
+ $ echo '{"a":1, "b":2}' | R where '{"a": b}'
+ $`},
+		{"mixin", mixin, true,
+			"mixin <obj>   adds obj properties into input object",
+			` $ echo '{"a":1, "b":2}' | R mixin '{"b": 5,"c":3}'
+ {"a":1,"b":5,"c":3}`},
 		// logic
-		{"eq", eq, true, "eq  <obj>     compares stdin with first argument for equality"},
-		{"not", not, false, "not <func>    inverts boolean result of following function"},
+		{"eq", eq, true,
+			"eq  <obj>     compares stdin with first argument for equality",
+			` $ echo '{"a":{"b":1}}' | R eq '{"a":{"b":1}}'`},
+		{"not", not, false,
+			"not <func>    inverts boolean result of following function",
+			` $ echo '0' | R not eq '1'`},
 		// array
-		{"head", head, true, "head          first element of a list"},
-		{"tail", tail, true, "tail          all but first elements of a list"},
-		{"each", each, true, "each          prints each list element in new line"},
-		{"map", obj_map, true, "map <func>    maps list elements using func"},
-		{"append", append_to_list, true, "append <obj>  appends object to list"},
-		{"filter", filter, true, "filter <func> returns list of objects matching predicate"},
-		{"find", find, true, "find <func>   first object from list matching predicate"},
+		{"head", head, true,
+			"head          first element of a list",
+			` $ echo '[1,2,3,4]' | R head
+ 1`},
+		{"tail", tail, true,
+			"tail          all but first elements of a list",
+			` $ echo '[1,2,3,4]' | R tail
+ [2,3,4]`},
+		{"each", each, true,
+			"each          prints each list element in new line",
+			` $ echo '[1,2,3]' | R each
+ 1
+ 2
+ 3`},
+		{"map", obj_map, true,
+			"map <func>    maps list elements using func",
+			` $ echo '[{"a":1},{"a":2}]' | R map path a
+ [1,2]`},
+		{"append", append_to_list, true,
+			"append <obj>  appends object to list",
+			` $ echo '[1]' | R append 2
+ [1,2]`},
+		{"filter", filter, true,
+			"filter <func> returns list of objects matching predicate",
+			` $ echo '[{"a":1, "b":2}]' | R filter where '{"a":1}'
+ [{"a":1,"b":2}]`},
+		{"find", find, true,
+			"find <func>   first object from list matching predicate",
+			` $ echo '[{"a":1, "b":2}]' | R find where '{"a":1}'
+ {"a":1,"b":2}
+ $ echo '[{"a":1, "b":2}]' | R find where '{"a":2}'
+ $`},
 	}
 }
 
 func dispatch(v interface{}, params []string) interface{} {
-	cmdName := params[0] // todo what if params is empty
-	args := params[1:]
+	var cmdName string
+	var args []string
+	if len(params) > 0 {
+		cmdName = params[0]
+	}
+	if len(params) > 1 {
+		args = params[1:]
+	}
 	cmds := allCmds()
 	cmd := cmds[0]
 	for _, i := range cmds {
