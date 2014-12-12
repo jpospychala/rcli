@@ -291,13 +291,18 @@ func find(v interface{}, params *list.List) interface{} {
 	}
 	for _, item := range list {
 		match := dispatch(item, listCopy(params))
-		if match != nil {
+		if match != nil && match != false {
 			params.Init()
 			return match
 		}
 	}
 	params.Init()
 	return nil
+}
+
+func Contains(in interface{}, params *list.List) interface{} {
+	params.InsertBefore("eq", params.Front())
+	return find(in, params)
 }
 
 func help(doc interface{}, params *list.List) interface{} {
@@ -350,7 +355,7 @@ func allCmds() []cmd {
  true`},
 		{"keys", keys, true,
 			"keys          returns object property names",
-			` echo '{"a":1,"b":2}' | R keys
+			` $ echo '{"a":1,"b":2}' | R keys
  ["a","b"]`},
 		{"pick", pick, true,
 			"pick [list]   returns object with only specified properties",
@@ -418,6 +423,10 @@ func allCmds() []cmd {
  {"a":1,"b":2}
  $ echo '[{"a":1, "b":2}]' | R find where '{"a":2}'
  $`},
+		{"contains", Contains, true,
+			"contains <obj> true if input contains object",
+			` $ echo '[1, 2]' | R contains 1
+ true`},
 	}
 }
 

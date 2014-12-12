@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -e
+set -e
 
 export PATH=./:$PATH
 
@@ -62,7 +62,8 @@ echo '{"a":1,"b":2}' | R values | R eq '[1,2]'
 echo '[1,2,3]' | R values
 
 # keys
-echo '{"a":1,"b":2}' | R keys | R eq '["a","b"]'
+echo '{"a":1,"b":2}' | R keys | R contains a
+echo '{"a":1,"b":2}' | R keys | R contains b
 
 # where
 echo '{"a":1, "b":2}' | R where '{"a": 1}' | R eq '{"a":1, "b":2}'

@@ -37,7 +37,7 @@ sudo make install
 
 Usage
 =====
-Usage: R <func> [arguments...]
+Usage: ```R <func> [arguments...]```
 
 Functions can be stacked, so that result of one function is passed as input to next function,
 for example:
@@ -69,6 +69,16 @@ Example:
 ```bash
  $ echo '[1,2]' | R concat '[3,4]'
  [1,2,3,4]
+```
+
+contains
+--------
+contains <obj> true if input contains object
+
+Example:
+```bash
+ $ echo '[1, 2]' | R contains 1
+ true
 ```
 
 each
@@ -135,7 +145,7 @@ keys          returns object property names
 
 Example:
 ```bash
- echo '{"a":1,"b":2}' | R keys
+ $ echo '{"a":1,"b":2}' | R keys
  ["a","b"]
 ```
 
