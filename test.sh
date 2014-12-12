@@ -1,4 +1,5 @@
 #!/bin/bash
+#set -e
 
 export PATH=./:$PATH
 
@@ -26,6 +27,7 @@ echo '{"a":1,"b":2}' | R omit a | R eq '{"b":2}'
 
 # path
 echo '{"a":{"b":true}}' | R path a.b | R eq true
+echo '{"a":{"b":true}}' | R path a.b eq true
 echo '{"a":{"c":2}}' | R path a.c | R eq 2
 echo '[{"a":1}]' | R path 0.a | R eq 1
 echo '{}' | R path -1

@@ -37,6 +37,19 @@ sudo make install
 
 Usage
 =====
+Usage: R <func> [arguments...]
+
+Functions can be stacked, so that result of one function is passed as input to next function,
+for example:
+
+```bash
+$ echo '[1]' | R append 2 each
+1
+2
+```
+
+Functions
+=========
 
 append
 ------

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -8,8 +9,12 @@ import (
 	"strings"
 )
 
-func path(v interface{}, params []string) interface{} {
-	path := strings.Split(params[0], ".")
+func path(v interface{}, params *list.List) interface{} {
+	if params.Len() == 0 {
+		return v
+	}
+	pathStr := params.Remove(params.Front()).(string)
+	path := strings.Split(pathStr, ".")
 	for _, seg := range path {
 		doc, ok := v.(map[string]interface{})
 		if ok {
@@ -32,7 +37,7 @@ func path(v interface{}, params []string) interface{} {
 	return v
 }
 
-func keys(v interface{}, params []string) interface{} {
+func keys(v interface{}, params *list.List) interface{} {
 	doc, ok := v.(map[string]interface{})
 	if !ok {
 		return nil
@@ -44,7 +49,7 @@ func keys(v interface{}, params []string) interface{} {
 	return keys
 }
 
-func values(v interface{}, params []string) interface{} {
+func values(v interface{}, params *list.List) interface{} {
 	doc, ok := v.(map[string]interface{})
 	if !ok {
 		return nil
@@ -56,31 +61,32 @@ func values(v interface{}, params []string) interface{} {
 	return vals
 }
 
-func pick(v interface{}, params []string) interface{} {
+func pick(v interface{}, params *list.List) interface{} {
 	doc, ok := v.(map[string]interface{})
 	if !ok {
 		return nil
 	}
 	out := map[string]interface{}{}
 	for k, v := range doc {
-		for _, p := range params {
-			if k == p {
+		for e := params.Front(); e != nil; e = e.Next() {
+			if k == e.Value {
 				out[k] = v
 			}
 		}
 	}
+	params.Init()
 	return out
 }
 
-func omit(v interface{}, params []string) interface{} {
+func omit(v interface{}, params *list.List) interface{} {
 	doc, ok := v.(map[string]interface{})
 	if !ok {
 		return nil
 	}
 	for k, _ := range doc {
 		omit := false
-		for _, p := range params {
-			if k == p {
+		for e := params.Front(); e != nil; e = e.Next() {
+			if k == e.Value {
 				omit = true
 			}
 		}
@@ -88,13 +94,17 @@ func omit(v interface{}, params []string) interface{} {
 			delete(doc, k)
 		}
 	}
+	params.Init()
 	return doc
 }
 
-func where(v interface{}, params []string) interface{} {
-	v2 := unmarshal(params[0])
+func where(v interface{}, params *list.List) interface{} {
+	if params.Len() == 0 {
+		return nil
+	}
+	v2 := unmarshal(params.Remove(params.Front()).(string))
 	keys := keys(v2, nil).([]string)
-	vpicked := pick(v, keys)
+	vpicked := pick(v, asList(keys))
 	if deepequal(vpicked, v2) {
 		return v
 	} else {
@@ -102,12 +112,15 @@ func where(v interface{}, params []string) interface{} {
 	}
 }
 
-func mixin(v interface{}, params []string) interface{} {
+func mixin(v interface{}, params *list.List) interface{} {
 	doc, ok := v.(map[string]interface{})
 	if !ok {
 		return nil
 	}
-	v2 := unmarshal(params[0])
+	if params.Len() == 0 {
+		return v
+	}
+	v2 := unmarshal(params.Remove(params.Front()).(string))
 	v2map, ok := v2.(map[string]interface{})
 	if !ok {
 		return nil
@@ -163,12 +176,15 @@ func deepequal(v interface{}, v2 interface{}) bool {
 	return false
 }
 
-func eq(v interface{}, params []string) interface{} {
-	v2 := unmarshal(params[0])
+func eq(v interface{}, params *list.List) interface{} {
+	if params.Len() == 0 {
+		return false
+	}
+	v2 := unmarshal(params.Remove(params.Front()).(string))
 	return deepequal(v, v2)
 }
 
-func not(v interface{}, params []string) interface{} {
+func not(v interface{}, params *list.List) interface{} {
 	ret := dispatch(v, params)
 	retbool, ok := ret.(bool)
 	if !ok {
@@ -177,7 +193,7 @@ func not(v interface{}, params []string) interface{} {
 	return !retbool
 }
 
-func head(v interface{}, params []string) interface{} {
+func head(v interface{}, params *list.List) interface{} {
 	list, ok := v.([]interface{})
 	if !ok {
 		return nil
@@ -188,7 +204,7 @@ func head(v interface{}, params []string) interface{} {
 	return list[0]
 }
 
-func tail(v interface{}, params []string) interface{} {
+func tail(v interface{}, params *list.List) interface{} {
 	list, ok := v.([]interface{})
 	if !ok {
 		return nil
@@ -199,74 +215,82 @@ func tail(v interface{}, params []string) interface{} {
 	return list[1:]
 }
 
-func append_to_list(v interface{}, params []string) interface{} {
+func append_to_list(v interface{}, params *list.List) interface{} {
+	if params.Len() == 0 {
+		return v
+	}
 	list, ok := v.([]interface{})
 	if !ok {
 		return nil
 	}
-	v2 := unmarshal(params[0])
+	v2 := unmarshal(params.Remove(params.Front()).(string))
 	return append(list, v2)
 }
 
-func each(v interface{}, params []string) interface{} {
+func each(v interface{}, params *list.List) interface{} {
 	list, ok := v.([]interface{})
 	if !ok {
 		return nil
 	}
 	for _, item := range list {
-		marshal(item, false)
+		marshal(item)
 	}
 	return nil
 }
 
-func obj_map(v interface{}, params []string) interface{} {
+func obj_map(v interface{}, params *list.List) interface{} {
 	list, ok := v.([]interface{})
 	if !ok {
 		return nil
 	}
 	ret := []interface{}{}
 	for _, item := range list {
-		out := dispatch(item, params)
+		out := dispatch(item, listCopy(params))
 		ret = append(ret, out)
 	}
+	params.Init()
 	return ret
 }
 
-func filter(v interface{}, params []string) interface{} {
+func filter(v interface{}, params *list.List) interface{} {
 	list, ok := v.([]interface{})
 	if !ok {
 		return nil
 	}
 	matches := []interface{}{}
 	for _, item := range list {
-		match := dispatch(item, params)
+		match := dispatch(item, listCopy(params))
 		if match != nil {
 			matches = append(matches, match)
 		}
 	}
+	params.Init()
 	return matches
 }
 
-func find(v interface{}, params []string) interface{} {
+func find(v interface{}, params *list.List) interface{} {
 	list, ok := v.([]interface{})
 	if !ok {
 		return nil
 	}
 	for _, item := range list {
-		match := dispatch(item, params)
+		match := dispatch(item, listCopy(params))
 		if match != nil {
+			params.Init()
 			return match
 		}
 	}
+	params.Init()
 	return nil
 }
 
-func help(doc interface{}, params []string) interface{} {
+func help(doc interface{}, params *list.List) interface{} {
 	cmds := allCmds()
-	fmt.Println("Usage: R <command> [arguments...]")
-	if len(params) > 0 {
+	fmt.Println("Usage: R <func> [arguments...]")
+	if params.Len() > 0 {
+		lookedFunc := params.Remove(params.Front()).(string)
 		for _, cmd := range cmds {
-			if cmd.name == params[0] {
+			if cmd.name == lookedFunc {
 				fmt.Println(cmd.descr)
 				if cmd.example != "" {
 					fmt.Printf("\nExample:\n%v\n", cmd.example)
@@ -274,6 +298,7 @@ func help(doc interface{}, params []string) interface{} {
 			}
 		}
 	} else {
+		fmt.Println("\nAvailable functions:")
 		for _, cmd := range cmds {
 			fmt.Println(cmd.descr)
 		}
@@ -283,7 +308,7 @@ func help(doc interface{}, params []string) interface{} {
 
 type cmd struct {
 	name    string
-	run     func(interface{}, []string) interface{}
+	run     func(interface{}, *list.List) interface{}
 	stdin   bool
 	descr   string
 	example string
@@ -369,14 +394,17 @@ func allCmds() []cmd {
 	}
 }
 
-func dispatch(v interface{}, params []string) interface{} {
-	var cmdName string
-	var args []string
-	if len(params) > 0 {
-		cmdName = params[0]
+func dispatch(v interface{}, params *list.List) interface{} {
+	for params.Len() > 0 {
+		v = run(v, params)
 	}
-	if len(params) > 1 {
-		args = params[1:]
+	return v
+}
+
+func run(v interface{}, params *list.List) interface{} {
+	var cmdName string
+	if params.Len() > 0 {
+		cmdName = params.Remove(params.Front()).(string)
 	}
 	cmds := allCmds()
 	cmd := cmds[0]
@@ -390,7 +418,7 @@ func dispatch(v interface{}, params []string) interface{} {
 		dec.UseNumber()
 		dec.Decode(&v)
 	}
-	return cmd.run(v, args)
+	return cmd.run(v, params)
 }
 
 func unmarshal(param string) interface{} {
@@ -405,22 +433,47 @@ func unmarshal(param string) interface{} {
 	return v2
 }
 
-func marshal(v interface{}, canExit bool) {
+func marshal(v interface{}) {
 	_, isString := v.(string)
 	if isString {
 		fmt.Println(v)
 	} else {
 		enc := json.NewEncoder(os.Stdout)
 		enc.Encode(&v)
-		vBool, ok := v.(bool)
-		if canExit && ok && !vBool {
-			os.Exit(1)
-		}
 	}
 }
 
+func exitCode(v interface{}) int {
+	if v == nil {
+		return 1
+	}
+	vBool, ok := v.(bool)
+	if ok && !vBool {
+		return 1
+	}
+	return 0
+}
+
+func asList(arr []string) *list.List {
+	l := list.New()
+	for _, i := range arr {
+		l.PushBack(i)
+	}
+	return l
+}
+
+func listCopy(src *list.List) *list.List {
+	l := list.New()
+	for e := src.Front(); e != nil; e = e.Next() {
+		l.PushBack(e.Value)
+	}
+	return l
+}
+
 func main() {
-	if ret := dispatch(nil, os.Args[1:]); ret != nil {
-		marshal(ret, true)
+	args := asList(os.Args[1:])
+	if ret := dispatch(nil, args); ret != nil {
+		marshal(ret)
+		os.Exit(exitCode(ret))
 	}
 }
