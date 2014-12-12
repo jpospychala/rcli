@@ -322,6 +322,10 @@ func help(doc interface{}, params *list.List) interface{} {
 	return nil
 }
 
+func Version(doc interface{}, params *list.List) interface{} {
+	return "0.1"
+}
+
 type cmd struct {
 	name    string
 	run     func(interface{}, *list.List) interface{}
@@ -335,6 +339,9 @@ func allCmds() []cmd {
 		// misc
 		{"help", help, false,
 			"help          prints usage details",
+			""},
+		{"version", Version, false,
+			"version       prints R version",
 			""},
 		// object
 		{"path", path, true,

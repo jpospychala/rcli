@@ -53,7 +53,6 @@ Functions
 
 append
 ------
-
 append <obj>  appends object to list
 
 Example:
@@ -64,18 +63,16 @@ Example:
 
 concat
 ------
-
 concat [list]  concatenates two lists
 
 Example:
 ```bash
-$ echo '[1,2]' | R concat '[3,4]'
-[1,2,3,4]
+ $ echo '[1,2]' | R concat '[3,4]'
+ [1,2,3,4]
 ```
 
 each
 ----
-
 each          prints each list element in new line
 
 Example:
@@ -88,7 +85,6 @@ Example:
 
 eq
 --
-
 eq  <obj>     compares stdin with first argument for equality
 
 Example:
@@ -98,7 +94,6 @@ Example:
 
 filter
 ------
-
 filter <func> returns list of objects matching predicate
 
 Example:
@@ -109,7 +104,6 @@ Example:
 
 find
 ----
-
 find <func>   first object from list matching predicate
 
 Example:
@@ -122,7 +116,6 @@ Example:
 
 head
 ----
-
 head          first element of a list
 
 Example:
@@ -133,13 +126,11 @@ Example:
 
 help
 ----
-
 help          prints usage details
 
 
 keys
 ----
-
 keys          returns object property names
 
 Example:
@@ -150,7 +141,6 @@ Example:
 
 map
 ---
-
 map <func>    maps list elements using func
 
 Example:
@@ -161,7 +151,6 @@ Example:
 
 mixin
 -----
-
 mixin <obj>   adds obj properties into input object
 
 Example:
@@ -172,7 +161,6 @@ Example:
 
 not
 ---
-
 not <func>    inverts boolean result of following function
 
 Example:
@@ -182,7 +170,6 @@ Example:
 
 omit
 ----
-
 omit [list]   returns object without specified properties
 
 Example:
@@ -193,7 +180,6 @@ Example:
 
 path
 ----
-
 path <path>   returns object at period-delimited path
 
 Example:
@@ -204,7 +190,6 @@ Example:
 
 pick
 ----
-
 pick [list]   returns object with only specified properties
 
 Example:
@@ -215,7 +200,6 @@ Example:
 
 tail
 ----
-
 tail          all but first elements of a list
 
 Example:
@@ -226,7 +210,6 @@ Example:
 
 values
 ------
-
 values        returns list of object values
 
 Example:
@@ -235,9 +218,13 @@ Example:
  [1,2]
 ```
 
+version
+-------
+version       prints R version
+
+
 where
 -----
-
 where <obj>   checks if object matches spec obj
 
 Example:
