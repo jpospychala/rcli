@@ -62,6 +62,17 @@ Example:
  [1,2]
 ```
 
+concat
+------
+
+concat [list]  concatenates two lists
+
+Example:
+```bash
+$ echo '[1,2]' | R concat '[3,4]'
+[1,2,3,4]
+```
+
 each
 ----
 

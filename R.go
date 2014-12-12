@@ -215,7 +215,7 @@ func tail(v interface{}, params *list.List) interface{} {
 	return list[1:]
 }
 
-func append_to_list(v interface{}, params *list.List) interface{} {
+func Append(v interface{}, params *list.List) interface{} {
 	if params.Len() == 0 {
 		return v
 	}
@@ -225,6 +225,22 @@ func append_to_list(v interface{}, params *list.List) interface{} {
 	}
 	v2 := unmarshal(params.Remove(params.Front()).(string))
 	return append(list, v2)
+}
+
+func Concat(in interface{}, params *list.List) interface{} {
+	if params.Len() == 0 {
+		return in
+	}
+	list, ok := in.([]interface{})
+	if !ok {
+		return nil
+	}
+	arg := unmarshal(params.Remove(params.Front()).(string))
+	listToAdd, ok := arg.([]interface{})
+	if !ok {
+		return nil
+	}
+	return append(list, listToAdd...)
 }
 
 func each(v interface{}, params *list.List) interface{} {
@@ -377,10 +393,14 @@ func allCmds() []cmd {
 			"map <func>    maps list elements using func",
 			` $ echo '[{"a":1},{"a":2}]' | R map path a
  [1,2]`},
-		{"append", append_to_list, true,
+		{"append", Append, true,
 			"append <obj>  appends object to list",
 			` $ echo '[1]' | R append 2
  [1,2]`},
+		{"concat", Concat, true,
+			"concat [list]  concatenates two lists",
+			` $ echo '[1,2]' | R concat '[3,4]'
+ [1,2,3,4]`},
 		{"filter", filter, true,
 			"filter <func> returns list of objects matching predicate",
 			` $ echo '[{"a":1, "b":2}]' | R filter where '{"a":1}'

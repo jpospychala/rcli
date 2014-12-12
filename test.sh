@@ -54,6 +54,9 @@ echo '[{"a":1},{"a":2}]' | R map path a | R eq '[1,2]'
 # append
 echo '[1]' | R append 2 | R eq '[1,2]'
 
+# concat
+echo '[1, 2]' | R concat '[3,4]' eq '[1,2,3,4]'
+
 # values
 echo '{"a":1,"b":2}' | R values | R eq '[1,2]'
 echo '[1,2,3]' | R values
