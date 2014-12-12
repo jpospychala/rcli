@@ -149,6 +149,16 @@ Example:
  ["a","b"]
 ```
 
+length
+------
+length [list] number of elements in list
+
+Example:
+```bash
+ $ echo '[1,2,3,4]' | R length
+ 4
+```
+
 map
 ---
 map <func>    maps list elements using func

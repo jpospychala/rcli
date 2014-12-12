@@ -65,6 +65,9 @@ echo '[1,2,3]' | R values
 echo '{"a":1,"b":2}' | R keys | R contains a
 echo '{"a":1,"b":2}' | R keys | R contains b
 
+# length
+echo '[1,2,3,4]' | R length eq 4
+
 # where
 echo '{"a":1, "b":2}' | R where '{"a": 1}' | R eq '{"a":1, "b":2}'
 

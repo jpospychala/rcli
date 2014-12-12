@@ -150,8 +150,8 @@ func deepequal(v interface{}, v2 interface{}) bool {
 		}
 		return v1.String() == v2num.String()
 	case string:
-		v2float, ok := v2.(string)
-		return ok && v1 == v2float
+		v2str, ok := v2.(string)
+		return ok && v1 == v2str
 	case []interface{}:
 		v2list, ok := v2.([]interface{})
 		if ok && len(v1) == len(v2list) {
@@ -305,6 +305,14 @@ func Contains(in interface{}, params *list.List) interface{} {
 	return find(in, params)
 }
 
+func Length(in interface{}, params *list.List) interface{} {
+	list, ok := in.([]interface{})
+	if !ok {
+		return nil
+	}
+	return unmarshal(strconv.Itoa(len(list)))
+}
+
 func help(doc interface{}, params *list.List) interface{} {
 	cmds := allCmds()
 	fmt.Println("Usage: R <func> [arguments...]")
@@ -427,6 +435,10 @@ func allCmds() []cmd {
 			"contains <obj> true if input contains object",
 			` $ echo '[1, 2]' | R contains 1
  true`},
+		{"length", Length, true,
+			"length [list] number of elements in list",
+			` $ echo '[1,2,3,4]' | R length
+ 4`},
 	}
 }
 
