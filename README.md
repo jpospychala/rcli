@@ -1,5 +1,8 @@
 RCLI: Ramda for Command Line
 ============================
+
+[![Build Status](https://travis-ci.org/jpospychala/rcli.svg?branch=master)](https://travis-ci.org/jpospychala/rcli)
+
 JSON manipulation tools for command line inspired by Ramda.js, a practical functional JavaScript library inspired by Clojure.
 
 ```bash
