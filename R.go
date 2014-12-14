@@ -352,7 +352,7 @@ func help(doc interface{}, params *list.List) (interface{}, bool) {
 }
 
 func Version(doc interface{}, params *list.List) (interface{}, bool) {
-	return "0.1", true
+	return "0.2", true
 }
 
 type cmd struct {
