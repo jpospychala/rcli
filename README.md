@@ -48,6 +48,15 @@ $ echo '[1]' | R append 2 each
 2
 ```
 
+Input can contain single JSON object or sequence of objects, in which case each object is processed
+by function chain, for example:
+
+```bash
+$ echo -e '{"name":"Jack","sex":"male"}{"name":"Wendy","sex":"female"}' | R path name
+Jack
+Wendy
+```
+
 Functions
 =========
 
