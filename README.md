@@ -25,6 +25,15 @@ $ echo '{"age":60}' | R not eq '{"name":"joe"}'
 true
 ```
 
+Installing
+==========
+
+Version: 0.2
+
+Download binary for your platform:
+* [OSX](http://jpospychala.github.com/rcli/download/osx/R)
+* [Linux 64bit](http://jpospychala.github.com/rcli/download/linux64/R)
+
 Building
 ========
 RCLI is written in Go and requires ```go``` command to build.
